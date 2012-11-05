@@ -9,76 +9,44 @@
 	import flash.filesystem.File;
 	import flash.events.MouseEvent;
 	import flash.events.FileListEvent;
+	import com.greensock.TweenMax;
 	import com.selected_file_list;
+	import com.select_files;
+	import com.image_saver;
+	import com.planitagency.CustomEvent;
 
 	public class Controller
 	{
 		private var _path;
-		private var _loader:Loader;
-		private var _selectedFileList:selected_file_list;
+		private var _fileSelector:select_files;
+		private var _queueManager:queue_manager;
+		private var _image_saver:image_saver;
+		private var _filename_ar:Array;
 		
 		public function Controller($p)
 		{
 			_path = $p;
-			_selectedFileList = new selected_file_list(_path.selected_files_txt_mc);
-			
-			_path.swf_loader_mc.visible = false;
-			_path.selected_files_txt_mc.visible = false;			
-			_path.select_btn.buttonMode = true;
-			_path.select_btn.addEventListener(MouseEvent.CLICK,browseForFiles);
+			hideAssets();
+			_path.addEventListener("FILES_SELECTED",handleSelectedFiles);
+			_path.addEventListener("READY_TO_SAVE",handleFilesToSave);
+			initConverter();
 		}
-		private function showSelectedFiles(txt)
+		private function hideAssets()
 		{
-			//_path.selected_files_txt_mc.visible = true;
-			//_path.selected_files_txt_mc.txt.htmlText = txt;
+			_path.step_1.visible = _path.step_2.visible = _path.step_3.visible = false;
 		}
-		private function browseForFiles(e:MouseEvent)
+		private function initConverter()
 		{
-			var directory:File = File.documentsDirectory;
-			try
-			{
-				directory.browseForOpenMultiple("Select Directory");
-				directory.addEventListener(FileListEvent.SELECT_MULTIPLE, filesSelected);
-			}
-			catch (error:Error)
-			{
-				trace("Failed:", error.message);
-			}
-			
-			function filesSelected(event:FileListEvent):void 
-			{
-				_path.swf_loader_mc.visible = true;
-				/*for (var i:uint = 0; i < event.files.length; i++) 
-				{
-					
-					txt += event.files[i].nativePath+"<br>";
-				}*/
-				_selectedFileList.init(event.files);
-				loadFiles(event.files);
-			}
+			_fileSelector = new select_files(_path);
 		}
-		private function loadFiles($ar:Array)
+		private function handleSelectedFiles(e:CustomEvent)
 		{
-			loadSwf($ar[0].nativePath,swfLoaded);
+			_filename_ar = e.arg._file_ar;
+			_queueManager = new queue_manager(_path, _filename_ar);
 		}
-		
-		private function swfLoaded($d)
+		private function handleFilesToSave(e:CustomEvent)
 		{
-			trace($d);
-			_path.addChild($d);
-		}
-		
-		private function loadSwf(url:String,callBack:Function)
-		{
-			_loader = new Loader();
-			_loader.contentLoaderInfo.addEventListener(Event.COMPLETE, onCompleteHandler);
-			_loader.load(new URLRequest("file://"+url));
-			
-			function onCompleteHandler(loadEvent:Event)
-			{
-				_loader.contentLoaderInfo.removeEventListener(Event.COMPLETE, onCompleteHandler);
-				callBack(loadEvent.currentTarget.loader);
-			}
+			_image_saver = new image_saver(_path,e.arg._bitmap_ar,_filename_ar);
 		}
 	}
 }
