@@ -29,14 +29,31 @@
 		{
 			_path = $p;
 			_urlArray = $ar;
-			//_path.addChild(_container);
 			_path.step_2.visible = true;
+			_path.step_2.preview_txt.visible = false;
 			_path.step_2.queue_start.progress_mc.visible = false;
-			//initLoadFile();
-			_path.step_2.queue_start.start_btn.addEventListener(MouseEvent.CLICK,processSWFs);
+			buttonManager.makeButton(_path.step_2.queue_start.start_btn,processSWFs);
+		}
+		public function Update($ar)
+		{
+			trace("//////UPDATE QUEUE MANAGER//////");
+			_path.step_2.queue_start.sec_txt.text = timer_delay;
+			_loadCount = 0;
+			clearImagesPreview();
+			_urlArray = $ar;
+			_loaded_movie_ar = new Array();
+			_path.step_2.visible = true;
+			_path.step_2.preview_txt.visible = false;
+			_path.step_2.queue_start.progress_mc.visible = false;
+			_path.step_2.queue_start.visible = true;
+		}
+		public function Close()
+		{
+			_path.step_2.visible = false;	
 		}
 		private function processSWFs(e:MouseEvent)
 		{
+			_bitmapDataObjects_ar = new Array();
 			timer_delay = _path.step_2.queue_start.sec_txt.text;
 			_waitTimer = new Timer(timer_delay*1000,1);
 			_statusTimer = new Timer(1000,timer_delay);
@@ -64,6 +81,16 @@
 			pushImagesToPreview();
 			_path.dispatchEvent(new CustomEvent("READY_TO_SAVE",true,false,{_bitmap_ar:_bitmapDataObjects_ar}));
 		}
+		private function clearImagesPreview()
+		{
+			if(_path.step_2.img_container.numChildren > 0)
+			{
+				while(_path.step_2.img_container.numChildren > 0)
+				{
+					_path.step_2.img_container.removeChildAt(0);
+				}
+			}
+		}
 		private function pushImagesToPreview()
 		{
 			var maxWidth:int = 475;
@@ -75,9 +102,10 @@
 				bitmap.x = oS;
 				oS+= bitmap.width + 10;
 			}
+			_path.step_2.preview_txt.visible = true;
 			_path.step_2.img_container.width = 475;
 			_path.step_2.img_container.scaleY = _path.step_2.img_container.scaleX;
-			if(_path.step_2.img_container.height > 125)
+			if(_path.step_2.img_container.height > 115)
 			{
 				_path.step_2.img_container.height = 125;
 				_path.step_2.img_container.scaleX = _path.step_2.img_container.scaleY;
@@ -90,7 +118,6 @@
 		
 		private function swfLoaded($d:Loader)
 		{
-			//trace("-----",$d.contentLoaderInfo.width);
 			_loaded_movie_ar.push(_container.addChild($d));
 			_loadCount++;
 			if(_loadCount < _urlArray.length) initLoadFiles();

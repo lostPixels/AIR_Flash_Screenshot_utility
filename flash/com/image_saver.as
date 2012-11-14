@@ -10,6 +10,7 @@
 	import flash.filesystem.FileStream;
 	import flash.filesystem.FileMode;
 	import flash.utils.setTimeout;
+	import com.buttonManager;
 
 	public class image_saver
 	{
@@ -19,15 +20,28 @@
 		private var _encoded_ar:Array = new Array();
 		private var _url_ar:Array;
 		private var step:int = 0;
+		private var session:int;
 		public function image_saver($p:MovieClip, $ar:Array,$url_ar:Array)
 		{
 			_path = $p;
 			_bD_ar = $ar;
 			_url_ar = $url_ar;
+			step = 0;
+			session = Math.random();
 			_path.step_3.visible = true;
 			_path.step_3.status_txt.txtBox.text = "Encoding Images...";
 			_path.step_3.save_btn.visible = false;
+			buttonManager._buttonsEnabled = false;
 			startBannerEncode()
+		}
+		public function Update($ar:Array,$url_ar:Array)
+		{
+			_bD_ar = $ar;
+			_url_ar = $url_ar;
+			_encoded_ar = new Array();
+			step = 0;
+			session = Math.random();
+			startBannerEncode();
 		}
 		private function startSave(e:MouseEvent)
 		{
@@ -59,23 +73,25 @@
 			_path.selected_files_txt_mc.setButtonToDone(step-1);
 			_path.step_3.save_btn.visible = true;
 			_path.step_3.status_txt.visible = false;
-			_path.step_3.save_btn.addEventListener(MouseEvent.CLICK,startSave);
+			buttonManager._buttonsEnabled = true;
+			buttonManager.makeButton(_path.step_3.save_btn,startSave);
 			trace("---ALL ADS CONVERTED---");
 		}
-		private function startBannerEncode()
+		private function startBannerEncode(session_id:int = NaN)
 		{
 			if(step > 0) _path.selected_files_txt_mc.setButtonToDone(step-1);
 			_path.selected_files_txt_mc.setButtonToInProgress(step);
-			setTimeout(encodeBanner,250);
+			if(!isNaN(session_id) && session_id == session) setTimeout(encodeBanner,250,session);
+			else trace("!!!!!!!!!!!!old encoding session found");
 		}
-		private function encodeBanner()
+		private function encodeBanner(session_id)
 		{
 			trace("+++ENCODE+++");
 			var jpg:ByteArray = _encoder.encode(_bD_ar[step]);
 			_encoded_ar.push(jpg);
 			step++;
 			if(step >= _bD_ar.length) allBitmapsConverted();
-			else startBannerEncode();
+			else startBannerEncode(session_id);
 		}
 		private function getTruncatedName($s:String)
 		{

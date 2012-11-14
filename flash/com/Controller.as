@@ -42,11 +42,15 @@
 		private function handleSelectedFiles(e:CustomEvent)
 		{
 			_filename_ar = e.arg._file_ar;
-			_queueManager = new queue_manager(_path, _filename_ar);
+			if(_image_saver) _queueManager.Close();
+			
+			if(!_queueManager) _queueManager = new queue_manager(_path, _filename_ar);
+			else _queueManager.Update(_filename_ar);
 		}
 		private function handleFilesToSave(e:CustomEvent)
 		{
-			_image_saver = new image_saver(_path,e.arg._bitmap_ar,_filename_ar);
+			if(!_image_saver) _image_saver = new image_saver(_path,e.arg._bitmap_ar,_filename_ar);
+			else _image_saver.Update(e.arg._bitmap_ar,_filename_ar);
 		}
 	}
 }

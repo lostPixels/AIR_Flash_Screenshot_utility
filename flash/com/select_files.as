@@ -6,6 +6,7 @@
 	import flash.events.FileListEvent;
 	import com.selected_file_list;
 	import com.planitagency.CustomEvent;
+	import com.buttonManager;
 
 	public class select_files
 	{
@@ -15,10 +16,9 @@
 		public function select_files($p)
 		{
 			_path = $p;
-			_selectedFileList = _path.selected_files_txt_mc;//new selected_file_list(_path.selected_files_txt_mc);
+			_selectedFileList = _path.selected_files_txt_mc;
 			_path.step_1.visible = true;
-			_path.step_1.select_btn.buttonMode = true;
-			_path.step_1.select_btn.addEventListener(MouseEvent.CLICK,browseForFiles);
+			buttonManager.makeButton(_path.step_1.select_btn,browseForFiles);
 		}
 		private function browseForFiles(e:MouseEvent)
 		{
@@ -37,11 +37,7 @@
 			{
 				_selectedFileList.init(event.files);
 				_path.dispatchEvent(new CustomEvent("FILES_SELECTED",true,false,{_file_ar:event.files}));
-				//initStep2();
-				//startSWFLoad(event.files);
 			}
 		}
-
 	}
-
 }
